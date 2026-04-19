@@ -6,16 +6,24 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="https://cyy-234800217.github.io">
-  <title>Tag: Hadoop | Hexo</title>
+  <title>Spark HA &amp; Yarn配置 | Hexo</title>
   <meta name="generator" content="hexo-theme-yilia-plus">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   
-  <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
-<meta property="og:url" content="https://cyy-234800217.github.io/tags/Hadoop/index.html">
+  <meta name="description" content="Spark HA &amp; Yarn配置基于前两篇的基础环境（JDK+Hadoop+Zookeeper）和Spark基础配置，本文讲解Spark的两种企业级运行模式：Spark Standalone HA（高可用）和Spark On Yarn（依赖Hadoop YARN资源调度），适配生产环境的高可用、高并发需求，步骤完整可直接实操。 一、前置准备（必看）确保以下环境已配置完成（参考前两篇博文）">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spark HA &amp; Yarn配置">
+<meta property="og:url" content="https://cyy-234800217.github.io/2026/04/21/Spark-HA-Yarn%E9%85%8D%E7%BD%AE/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="Spark HA &amp; Yarn配置基于前两篇的基础环境（JDK+Hadoop+Zookeeper）和Spark基础配置，本文讲解Spark的两种企业级运行模式：Spark Standalone HA（高可用）和Spark On Yarn（依赖Hadoop YARN资源调度），适配生产环境的高可用、高并发需求，步骤完整可直接实操。 一、前置准备（必看）确保以下环境已配置完成（参考前两篇博文）">
 <meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2026-04-21T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-19T14:22:08.843Z">
 <meta property="article:author" content="John Doe">
+<meta property="article:tag" content="Spark">
+<meta property="article:tag" content="Spark HA">
+<meta property="article:tag" content="Spark On Yarn">
+<meta property="article:tag" content="Zookeeper">
 <meta name="twitter:card" content="summary">
   
     <link rel="alternative" href="/atom.xml" title="Hexo" type="application/atom+xml">
@@ -207,41 +215,268 @@
               class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            
-  
-  
+            <article id="post-Spark-HA-Yarn配置" class="article article-type-post " itemscope itemprop="blogPost">
+  <div class="article-inner">
     
-    
-      
-      
-      <section class="archives-wrap">
-        <div class="archive-year-wrap">
-          <a href="/archives/2026" class="archive-year">2026</a>
-        </div>
-        <div class="archives">
-    
-    <article class="archive-article archive-type-post">
-  <div class="archive-article-inner">
-    <header class="archive-article-header">
-      	<div class="article-meta">
-	      	
-<a href="/2026/04/19/Spark%E5%9F%BA%E7%A1%80%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/" class="archive-article-date">
-        <time datetime="2026-04-19T02:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2026-04-19</time>
-</a>
-
-        </div>
-    	 
+      <header class="article-header">
   
-    <h1 itemprop="name">
-	
-	  <a class="archive-article-title" href="/2026/04/19/Spark%E5%9F%BA%E7%A1%80%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/" target="_blank">Spark基础环境配置</a>
   
+    <h1 class="article-title" itemprop="name">
+      Spark HA &amp; Yarn配置
     </h1>
   
 
 
-        <div class="article-info info-on-right">
+  
+  
+        
+        <span id="busuanzi_container_page_pv" style='display:none' class="archive-article-date">
+              <i class="icon-smile icon"></i> 阅读数：<span id="busuanzi_value_page_pv"></span>次
+        </span>
+
+<a href="/2026/04/21/Spark-HA-Yarn%E9%85%8D%E7%BD%AE/" class="archive-article-date">
+        <time datetime="2026-04-21T02:00:00.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2026-04-21</time>
+</a>
+
+  
+  
+    
+<div style="margin-top:10px;">
+  <span class="post-time">
+    <span class="post-meta-item-icon">
+      <!-- fonts.scss -->
+      <!-- 百度字体平台:http://fontstore.baidu.com/static/editor/index.html -->
+      <i class="icon-statistics"></i>
+      <span class="post-meta-item-text"> 字数统计:</span>
+      <span class="post-count">2k字</span>
+    </span>
+  </span>
+
+  <span class="post-time">
+    &nbsp; | &nbsp;
+    <span class="post-meta-item-icon">
+      <i class="icon-book icon"></i>
+      <span class="post-meta-item-text"> 阅读时长≈</span>
+      <span class="post-count">8分</span>
+    </span>
+  </span>
+</div>
+
+
+  
+  </header>
+  
+  <div class="article-entry" itemprop="articleBody">
+    
+    <h1 id="Spark-HA-Yarn配置"><a href="#Spark-HA-Yarn配置" class="headerlink" title="Spark HA &amp; Yarn配置"></a>Spark HA &amp; Yarn配置</h1><p>基于前两篇的基础环境（JDK+Hadoop+Zookeeper）和Spark基础配置，本文讲解Spark的两种企业级运行模式：Spark Standalone HA（高可用）和Spark On Yarn（依赖Hadoop YARN资源调度），适配生产环境的高可用、高并发需求，步骤完整可直接实操。</p>
+<h2 id="一、前置准备（必看）"><a href="#一、前置准备（必看）" class="headerlink" title="一、前置准备（必看）"></a>一、前置准备（必看）</h2><p>确保以下环境已配置完成（参考前两篇博文）：</p>
+<ol>
+<li>JDK 1.8 已安装并配置环境变量；</li>
+<li>Hadoop 3.3.4 伪分布式&#x2F;集群已启动（HDFS、YARN正常运行）；</li>
+<li>Zookeeper 3.7.0 已安装并启动（单机&#x2F;集群均可，HA依赖）；</li>
+<li>Spark 3.3.0 已安装并配置基础环境变量。</li>
+</ol>
+<h2 id="二、Spark-Standalone-HA配置（高可用）"><a href="#二、Spark-Standalone-HA配置（高可用）" class="headerlink" title="二、Spark Standalone HA配置（高可用）"></a>二、Spark Standalone HA配置（高可用）</h2><p>Spark Standalone默认是单Master节点，存在单点故障（Master挂掉后，集群无法提交任务），通过Zookeeper实现HA（高可用），配置多个Master节点（1个Active，1个&#x2F;多个Standby），当Active Master挂掉，Standby自动切换为Active，保证集群稳定运行。</p>
+<h3 id="1-集群规划（单机模拟双Master，实际生产用多节点）"><a href="#1-集群规划（单机模拟双Master，实际生产用多节点）" class="headerlink" title="1. 集群规划（单机模拟双Master，实际生产用多节点）"></a>1. 集群规划（单机模拟双Master，实际生产用多节点）</h3><ul>
+<li>Master1（Active）：localhost:7077（主Master）</li>
+<li>Master2（Standby）：localhost:7078（备用Master）</li>
+<li>Worker：localhost（从节点，连接所有Master）</li>
+<li>Zookeeper：localhost:2181（存储Master元数据，实现切换）</li>
+</ul>
+<h3 id="2-核心配置修改（基于之前的Spark配置）"><a href="#2-核心配置修改（基于之前的Spark配置）" class="headerlink" title="2. 核心配置修改（基于之前的Spark配置）"></a>2. 核心配置修改（基于之前的Spark配置）</h3><p>进入Spark配置目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> <span class="variable">$SPARK_HOME</span>/conf</span><br></pre></td></tr></table></figure>
+
+<h4 id="（1）修改spark-env-sh文件"><a href="#（1）修改spark-env-sh文件" class="headerlink" title="（1）修改spark-env.sh文件"></a>（1）修改spark-env.sh文件</h4><p>添加HA相关配置（替换原有Master配置，新增Zookeeper相关配置）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi spark-env.sh</span><br></pre></td></tr></table></figure>
+<p>添加&#x2F;修改以下内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># JDK路径（不变）</span></span><br><span class="line"><span class="built_in">export</span> JAVA_HOME=/usr/local/java/jdk1.8.0_202</span><br><span class="line"><span class="comment"># Hadoop配置路径（不变）</span></span><br><span class="line"><span class="built_in">export</span> HADOOP_CONF_DIR=<span class="variable">$HADOOP_HOME</span>/etc/hadoop</span><br><span class="line"><span class="comment"># 关闭默认的Master单节点配置，启用HA</span></span><br><span class="line"><span class="built_in">export</span> SPARK_DAEMON_JAVA_OPTS=<span class="string">&quot;-Dspark.deploy.recoveryMode=ZOOKEEPER -Dspark.deploy.zookeeper.url=localhost:2181 -Dspark.deploy.zookeeper.dir=/spark-ha&quot;</span></span><br><span class="line"><span class="comment"># Master1端口（默认7077，可修改）</span></span><br><span class="line"><span class="built_in">export</span> SPARK_MASTER_PORT=7077</span><br><span class="line"><span class="comment"># Master1 WebUI端口（默认8080）</span></span><br><span class="line"><span class="built_in">export</span> SPARK_MASTER_WEBUI_PORT=8080</span><br><span class="line"><span class="comment"># Master2端口（与Master1不同，避免冲突）</span></span><br><span class="line"><span class="comment"># export SPARK_MASTER_PORT=7078</span></span><br><span class="line"><span class="comment"># Master2 WebUI端口（与Master1不同）</span></span><br><span class="line"><span class="comment"># export SPARK_MASTER_WEBUI_PORT=8082</span></span><br></pre></td></tr></table></figure>
+
+<p>参数说明：</p>
+<ul>
+<li><code>spark.deploy.recoveryMode=ZOOKEEPER</code>：指定HA的恢复模式为Zookeeper；</li>
+<li><code>spark.deploy.zookeeper.url</code>：Zookeeper地址（多节点用逗号分隔，如localhost:2181,node2:2181）；</li>
+<li><code>spark.deploy.zookeeper.dir</code>：Zookeeper中存储Spark HA元数据的目录（自动创建）。</li>
+</ul>
+<h4 id="（2）修改slaves文件（不变，仍指定Worker节点）"><a href="#（2）修改slaves文件（不变，仍指定Worker节点）" class="headerlink" title="（2）修改slaves文件（不变，仍指定Worker节点）"></a>（2）修改slaves文件（不变，仍指定Worker节点）</h4><p>确保slaves文件中包含Worker节点（单机模式为localhost）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> <span class="variable">$SPARK_HOME</span>/conf/slaves</span><br><span class="line"><span class="comment"># 输出：localhost</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="3-启动Spark-Standalone-HA集群"><a href="#3-启动Spark-Standalone-HA集群" class="headerlink" title="3. 启动Spark Standalone HA集群"></a>3. 启动Spark Standalone HA集群</h3><h4 id="（1）启动Zookeeper（已启动可忽略）"><a href="#（1）启动Zookeeper（已启动可忽略）" class="headerlink" title="（1）启动Zookeeper（已启动可忽略）"></a>（1）启动Zookeeper（已启动可忽略）</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">zkServer.sh start</span><br><span class="line">zkServer.sh status <span class="comment"># 确认状态为standalone</span></span><br></pre></td></tr></table></figure>
+
+<h4 id="（2）启动第一个Master（Master1，Active）"><a href="#（2）启动第一个Master（Master1，Active）" class="headerlink" title="（2）启动第一个Master（Master1，Active）"></a>（2）启动第一个Master（Master1，Active）</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> <span class="variable">$SPARK_HOME</span>/sbin</span><br><span class="line"><span class="comment"># 启动Master1（默认使用spark-env.sh中的7077端口）</span></span><br><span class="line">start-master.sh</span><br></pre></td></tr></table></figure>
+
+<h4 id="（3）启动第二个Master（Master2，Standby）"><a href="#（3）启动第二个Master（Master2，Standby）" class="headerlink" title="（3）启动第二个Master（Master2，Standby）"></a>（3）启动第二个Master（Master2，Standby）</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启动Master2，指定端口（避免与Master1冲突）</span></span><br><span class="line">SPARK_MASTER_PORT=7078 SPARK_MASTER_WEBUI_PORT=8082 start-master.sh</span><br></pre></td></tr></table></figure>
+
+<h4 id="（4）启动Worker节点（连接所有Master）"><a href="#（4）启动Worker节点（连接所有Master）" class="headerlink" title="（4）启动Worker节点（连接所有Master）"></a>（4）启动Worker节点（连接所有Master）</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">start-slaves.sh</span><br></pre></td></tr></table></figure>
+
+<h4 id="（5）查看集群状态"><a href="#（5）查看集群状态" class="headerlink" title="（5）查看集群状态"></a>（5）查看集群状态</h4><ol>
+<li><p>查看进程（出现2个Master、1个Worker即成功）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">jps</span><br><span class="line"><span class="comment"># 输出示例：</span></span><br><span class="line"><span class="comment"># Master（Master1）</span></span><br><span class="line"><span class="comment"># Master（Master2）</span></span><br><span class="line"><span class="comment"># Worker</span></span><br><span class="line"><span class="comment"># QuorumPeerMain（Zookeeper）</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>访问两个Master的WebUI：</p>
+</li>
+</ol>
+<ul>
+<li>Master1 WebUI（Active）：http:&#x2F;&#x2F;服务器IP:8080（显示“ALIVE”）</li>
+<li>Master2 WebUI（Standby）：http:&#x2F;&#x2F;服务器IP:8082（显示“STANDBY”）</li>
+</ul>
+<h3 id="4-HA切换测试（验证高可用）"><a href="#4-HA切换测试（验证高可用）" class="headerlink" title="4. HA切换测试（验证高可用）"></a>4. HA切换测试（验证高可用）</h3><ol>
+<li><p>停止Active Master（Master1）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 查看Master1的进程ID</span></span><br><span class="line">jps | grep Master</span><br><span class="line"><span class="comment"># 杀死进程（替换为实际PID）</span></span><br><span class="line"><span class="built_in">kill</span> -9 12345</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>验证切换：</p>
+</li>
+</ol>
+<ul>
+<li>访问Master2的WebUI（http:&#x2F;&#x2F;服务器IP:8082），会发现状态变为“ALIVE”；</li>
+<li>Worker节点会自动连接到新的Active Master（Master2），集群可正常提交任务。</li>
+</ul>
+<ol start="3">
+<li>重启Master1（可选）：<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">start-master.sh</span><br></pre></td></tr></table></figure>
+重启后，Master1会作为Standby节点，与Master2形成HA集群。</li>
+</ol>
+<h2 id="三、Spark-On-Yarn配置（依赖Hadoop-YARN）"><a href="#三、Spark-On-Yarn配置（依赖Hadoop-YARN）" class="headerlink" title="三、Spark On Yarn配置（依赖Hadoop YARN）"></a>三、Spark On Yarn配置（依赖Hadoop YARN）</h2><p>Spark On Yarn模式是企业级最常用的模式，Spark不启动自己的集群，而是将任务提交到Hadoop YARN上运行，由YARN负责资源调度（CPU、内存），Spark只负责任务执行，适合大规模集群、多框架（Hadoop、Spark）共享资源的场景。</p>
+<h3 id="1-前置准备（必做）"><a href="#1-前置准备（必做）" class="headerlink" title="1. 前置准备（必做）"></a>1. 前置准备（必做）</h3><ol>
+<li><p>确保Hadoop YARN已启动（HDFS也需启动）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启动Hadoop（HDFS+YARN）</span></span><br><span class="line">start-dfs.sh</span><br><span class="line">start-yarn.sh</span><br><span class="line"><span class="comment"># 查看YARN WebUI（默认端口8088）</span></span><br><span class="line">http://服务器IP:8088</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>确认Spark依赖Hadoop YARN的配置（已在spark-env.sh中配置）：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> <span class="variable">$SPARK_HOME</span>/conf/spark-env.sh | grep HADOOP_CONF_DIR</span><br><span class="line"><span class="comment"># 输出：export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop</span></span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="2-核心配置修改"><a href="#2-核心配置修改" class="headerlink" title="2. 核心配置修改"></a>2. 核心配置修改</h3><h4 id="（1）修改spark-defaults-conf文件"><a href="#（1）修改spark-defaults-conf文件" class="headerlink" title="（1）修改spark-defaults.conf文件"></a>（1）修改spark-defaults.conf文件</h4><p>复制模板文件并修改，配置Spark On Yarn的核心参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> <span class="variable">$SPARK_HOME</span>/conf</span><br><span class="line"><span class="built_in">cp</span> spark-defaults.conf.template spark-defaults.conf</span><br><span class="line">vi spark-defaults.conf</span><br></pre></td></tr></table></figure>
+<p>添加以下内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 指定Spark运行在YARN上</span></span><br><span class="line">spark.master                     yarn</span><br><span class="line"><span class="comment"># 开启YARN动态资源分配（可选，推荐）</span></span><br><span class="line">spark.dynamicAllocation.enabled  <span class="literal">true</span></span><br><span class="line"><span class="comment"># 动态分配最小Executor数量</span></span><br><span class="line">spark.dynamicAllocation.minExecutors 1</span><br><span class="line"><span class="comment"># 动态分配最大Executor数量</span></span><br><span class="line">spark.dynamicAllocation.maxExecutors 5</span><br><span class="line"><span class="comment"># 资源释放超时时间（分钟）</span></span><br><span class="line">spark.dynamicAllocation.executorIdleTimeout 60s</span><br><span class="line"><span class="comment"># 指定YARN的资源管理器地址（默认即可）</span></span><br><span class="line">spark.yarn.resourcemanager.address  localhost:8032</span><br><span class="line"><span class="comment"># 指定Spark依赖的JAR包（避免YARN找不到依赖）</span></span><br><span class="line">spark.yarn.jars                  <span class="variable">$SPARK_HOME</span>/jars/*</span><br></pre></td></tr></table></figure>
+
+<h4 id="（2）修改yarn-site-xml文件（Hadoop配置）"><a href="#（2）修改yarn-site-xml文件（Hadoop配置）" class="headerlink" title="（2）修改yarn-site.xml文件（Hadoop配置）"></a>（2）修改yarn-site.xml文件（Hadoop配置）</h4><p>为了避免YARN资源不足，修改Hadoop的yarn-site.xml，增加资源分配限制：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi <span class="variable">$HADOOP_HOME</span>/etc/hadoop/yarn-site.xml</span><br></pre></td></tr></table></figure>
+<p>添加以下配置：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">    <span class="comment">&lt;!-- 之前的配置不变，新增以下内容 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.resource.memory-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>2048<span class="tag">&lt;/<span class="name">value</span>&gt;</span> <span class="comment">&lt;!-- 每个NodeManager分配2G内存 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.scheduler.maximum-allocation-memory-mb<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>2048<span class="tag">&lt;/<span class="name">value</span>&gt;</span> <span class="comment">&lt;!-- 每个任务最大可分配内存 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">name</span>&gt;</span>yarn.nodemanager.resource.cpu-vcores<span class="tag">&lt;/<span class="name">name</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">value</span>&gt;</span>2<span class="tag">&lt;/<span class="name">value</span>&gt;</span> <span class="comment">&lt;!-- 每个NodeManager分配2个CPU核心 --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>修改后重启YARN，使配置生效：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">stop-yarn.sh</span><br><span class="line">start-yarn.sh</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-测试Spark-On-Yarn模式"><a href="#3-测试Spark-On-Yarn模式" class="headerlink" title="3. 测试Spark On Yarn模式"></a>3. 测试Spark On Yarn模式</h3><p>运行Spark自带的SparkPi示例，提交到YARN上运行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> <span class="variable">$SPARK_HOME</span></span><br><span class="line"><span class="comment"># 提交任务到YARN（client模式，适合调试）</span></span><br><span class="line">spark-submit \</span><br><span class="line">--class org.apache.spark.examples.SparkPi \</span><br><span class="line">--master yarn \</span><br><span class="line">--deploy-mode client \</span><br><span class="line">--executor-memory 512m \</span><br><span class="line">--num-executors 2 \</span><br><span class="line">examples/jars/spark-examples_2.12-3.3.0.jar \</span><br><span class="line">10</span><br></pre></td></tr></table></figure>
+
+<p>参数说明：</p>
+<ul>
+<li><code>--deploy-mode client</code>：客户端模式（Driver在本地运行，适合调试）；</li>
+<li><code>--deploy-mode cluster</code>：集群模式（Driver在YARN集群上运行，适合生产环境）；</li>
+<li><code>--executor-memory 512m</code>：每个Executor分配512M内存；</li>
+<li><code>--num-executors 2</code>：启动2个Executor。</li>
+</ul>
+<h3 id="4-结果验证"><a href="#4-结果验证" class="headerlink" title="4. 结果验证"></a>4. 结果验证</h3><ol>
+<li>终端会输出π的近似值，显示“Successfully finished”即成功；</li>
+<li>访问YARN WebUI（http:&#x2F;&#x2F;服务器IP:8088），可查看任务的运行状态、资源使用情况；</li>
+<li>任务运行完成后，会显示“SUCCEEDED”状态。</li>
+</ol>
+<h3 id="5-Spark-History-Server配置（可选，推荐）"><a href="#5-Spark-History-Server配置（可选，推荐）" class="headerlink" title="5. Spark History Server配置（可选，推荐）"></a>5. Spark History Server配置（可选，推荐）</h3><p>默认情况下，Spark任务运行完成后，日志会丢失，配置History Server可保存任务日志，方便排查问题。</p>
+<ol>
+<li><p>修改spark-defaults.conf，添加History Server配置：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi <span class="variable">$SPARK_HOME</span>/conf/spark-defaults.conf</span><br></pre></td></tr></table></figure>
+<p>添加以下内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 启用History Server</span></span><br><span class="line">spark.eventLog.enabled <span class="literal">true</span></span><br><span class="line"><span class="comment"># 日志存储路径（HDFS路径，需提前创建）</span></span><br><span class="line">spark.eventLog.<span class="built_in">dir</span> hdfs://localhost:9000/spark-history</span><br><span class="line"><span class="comment"># History Server访问地址</span></span><br><span class="line">spark.history.fs.logDirectory hdfs://localhost:9000/spark-history</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在HDFS上创建日志存储目录：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">hdfs dfs -<span class="built_in">mkdir</span> -p /spark-history</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>启动History Server：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> <span class="variable">$SPARK_HOME</span>/sbin</span><br><span class="line">start-history-server.sh</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>访问History Server WebUI（默认端口18080）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://服务器IP:18080</span><br></pre></td></tr></table></figure>
+<p>可查看所有已运行的Spark任务日志、执行详情。</p>
+</li>
+</ol>
+<h2 id="四、常见问题解决"><a href="#四、常见问题解决" class="headerlink" title="四、常见问题解决"></a>四、常见问题解决</h2><ol>
+<li><p>Spark On Yarn提交任务失败，提示“资源不足”？</p>
+<ul>
+<li>修改yarn-site.xml，增加yarn.nodemanager.resource.memory-mb和yarn.scheduler.maximum-allocation-memory-mb的值；</li>
+<li>提交任务时减少–executor-memory和–num-executors的配置。</li>
+</ul>
+</li>
+<li><p>HA切换后，Worker无法连接新的Active Master？</p>
+<ul>
+<li>检查Zookeeper是否正常运行，spark-env.sh中Zookeeper地址是否正确；</li>
+<li>重启Worker节点：stop-slaves.sh &amp;&amp; start-slaves.sh。</li>
+</ul>
+</li>
+<li><p>History Server无法查看日志？</p>
+<ul>
+<li>确认HDFS路径&#x2F;spark-history已创建，且Spark有读写权限；</li>
+<li>检查spark-defaults.conf中日志路径配置是否正确。</li>
+</ul>
+</li>
+</ol>
+<h2 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h2><ol>
+<li>Spark Standalone HA：基于Zookeeper实现高可用，避免单点故障，适合小规模Spark独立集群；</li>
+<li>Spark On Yarn：依赖Hadoop YARN调度资源，适合大规模集群、多框架共享资源，是企业级首选；</li>
+<li>三篇博文已覆盖Spark全流程配置，从基础环境到企业级模式，可直接用于学习、测试和生产环境部署。</li>
+</ol>
+<p>后续可扩展：Spark集群调优、Spark SQL配置、Spark Streaming配置等内容。</p>
+
+    
+
+    
+    <div class="page-reward">
+      <a href="javascript:void(0);" class="page-reward-btn tooltip-top" target="_self">
+        <div class="tooltip tooltip-east">
+          <span class="tooltip-item">
+            赏
+          </span>
+          <span class="tooltip-content">
+            <span class="tooltip-text">
+              <span class="tooltip-inner">
+                <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i
+                    class="icon icon-quo-right"></i></p>
+                <div class="reward-box">
+                  
+                  <div class="reward-box-item">
+                    <img class="reward-img" src="/img/alipay.jpg">
+                    <span class="reward-type">支付宝</span>
+                  </div>
+                  
+                  
+                  <div class="reward-box-item">
+                    <img class="reward-img" src="/img/weixin.png">
+                    <span class="reward-type">微信</span>
+                  </div>
+                  
+                </div>
+              </span>
+            </span>
+          </span>
+        </div>
+      </a>
+    </div>
+    
+
+    
+    <div class="declare"> 
+      <ul class="post-copyright">
+        <li>
+          <strong>本文作者：</strong>
+          John Doe
+        </li>
+        <li>
+          <strong>本文链接：</strong>
+          <a href="https://cyy-234800217.github.io/2026/04/21/Spark-HA-Yarn配置/" title="Spark HA &amp; Yarn配置" target="_blank">https://cyy-234800217.github.io/2026/04/21/Spark-HA-Yarn配置/</a>
+        </li>
+        
+        <li>
+          <strong>版权声明： </strong>
           
+          本博客所有文章除特别声明外，均采用 <a href="https://github.com/JoeyBling/hexo-theme-yilia-plus/blob/master/LICENSE" rel="external nofollow" target="_blank">MIT</a> 许可协议。转载请注明出处！
+        </li>
+        
+      </ul>
+    </div>
+    
+
+  </div>
+  <div class="article-info article-info-index">
+    
+    
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -251,21 +486,21 @@
         		</li>
       		 
         		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Spark HA</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">Spark On Yarn</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
         			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">Zookeeper</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">JDK</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color2">Hadoop</a>
         		</li>
       		
 		</ul>
 	</div>
 
-          
+    
 	<div class="article-category tagcloud">
 		<i class="icon-book icon"></i>
 		<ul class="article-tag-list">
@@ -278,17 +513,118 @@
 	</div>
 
 
-        </div>
-        <div class="clearfix"></div>
-    </header>
-  </div>
-</article>
-  
-  
-    </div></section>
-  
+    
 
     
+    
+<div class="share-btn share-icons tooltip-left">
+  <div class="tooltip tooltip-east">
+    <span class="tooltip-item">
+      <a href="javascript:;" class="share-sns share-outer">
+        <i class="icon icon-share"></i>
+      </a>
+    </span>
+    <span class="tooltip-content">
+      <div class="share-wrap">
+        <div class="share-icons">
+          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
+            <i class="icon icon-weibo"></i>
+          </a>
+          <!-- <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
+            <i class="icon icon-weixin"></i>
+          </a> -->
+          <a class="qq share-sns" href="javascript:;" data-type="qq">
+            <i class="icon icon-qq"></i>
+          </a>
+          <a class="douban share-sns" href="javascript:;" data-type="douban">
+            <i class="icon icon-douban"></i>
+          </a>
+          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
+            <i class="icon icon-qzone"></i>
+          </a>
+          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
+            <i class="icon icon-facebook"></i>
+          </a>
+          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
+            <i class="icon icon-twitter"></i>
+          </a>
+          <a class="google share-sns" href="javascript:;" data-type="google">
+            <i class="icon icon-google"></i>
+          </a>
+        </div>
+      </div>
+    </span>
+  </div>
+</div>
+
+<div class="page-modal wx-share js-wx-box">
+    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
+    <p>扫一扫，分享到微信</p>
+    <div class="wx-qrcode">
+     <!-- <img src="//pan.baidu.com/share/qrcode?url=https://cyy-234800217.github.io/2026/04/21/Spark-HA-Yarn%E9%85%8D%E7%BD%AE/" alt="微信分享二维码"> -->
+    </div>
+</div>
+
+<div class="mask js-mask"></div>
+
+    
+    <div class="clearfix"></div>
+  </div>
+  </div>
+</article>
+
+
+<nav id="article-nav">
+  
+  
+    <a href="/2026/04/20/Spark-local-stand-alone%E9%85%8D%E7%BD%AE/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Spark local&amp; stand-alone配置</div>
+      <i class="icon-circle-right"></i>
+    </a>
+  
+</nav>
+
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+        <div class="toc-container tooltip-left">
+            <i class="icon-font icon-category"></i>
+            <div class="tooltip tooltip-east">
+                <span class="tooltip-item">
+                </span>
+                <span class="tooltip-content">
+                    <div class="toc-article">
+                    <ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#Spark-HA-Yarn%E9%85%8D%E7%BD%AE"><span class="toc-number">1.</span> <span class="toc-text">Spark HA &amp; Yarn配置</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E5%89%8D%E7%BD%AE%E5%87%86%E5%A4%87%EF%BC%88%E5%BF%85%E7%9C%8B%EF%BC%89"><span class="toc-number">1.1.</span> <span class="toc-text">一、前置准备（必看）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81Spark-Standalone-HA%E9%85%8D%E7%BD%AE%EF%BC%88%E9%AB%98%E5%8F%AF%E7%94%A8%EF%BC%89"><span class="toc-number">1.2.</span> <span class="toc-text">二、Spark Standalone HA配置（高可用）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E9%9B%86%E7%BE%A4%E8%A7%84%E5%88%92%EF%BC%88%E5%8D%95%E6%9C%BA%E6%A8%A1%E6%8B%9F%E5%8F%8CMaster%EF%BC%8C%E5%AE%9E%E9%99%85%E7%94%9F%E4%BA%A7%E7%94%A8%E5%A4%9A%E8%8A%82%E7%82%B9%EF%BC%89"><span class="toc-number">1.2.1.</span> <span class="toc-text">1. 集群规划（单机模拟双Master，实际生产用多节点）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%A0%B8%E5%BF%83%E9%85%8D%E7%BD%AE%E4%BF%AE%E6%94%B9%EF%BC%88%E5%9F%BA%E4%BA%8E%E4%B9%8B%E5%89%8D%E7%9A%84Spark%E9%85%8D%E7%BD%AE%EF%BC%89"><span class="toc-number">1.2.2.</span> <span class="toc-text">2. 核心配置修改（基于之前的Spark配置）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E4%BF%AE%E6%94%B9spark-env-sh%E6%96%87%E4%BB%B6"><span class="toc-number">1.2.2.1.</span> <span class="toc-text">（1）修改spark-env.sh文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E4%BF%AE%E6%94%B9slaves%E6%96%87%E4%BB%B6%EF%BC%88%E4%B8%8D%E5%8F%98%EF%BC%8C%E4%BB%8D%E6%8C%87%E5%AE%9AWorker%E8%8A%82%E7%82%B9%EF%BC%89"><span class="toc-number">1.2.2.2.</span> <span class="toc-text">（2）修改slaves文件（不变，仍指定Worker节点）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E5%90%AF%E5%8A%A8Spark-Standalone-HA%E9%9B%86%E7%BE%A4"><span class="toc-number">1.2.3.</span> <span class="toc-text">3. 启动Spark Standalone HA集群</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E5%90%AF%E5%8A%A8Zookeeper%EF%BC%88%E5%B7%B2%E5%90%AF%E5%8A%A8%E5%8F%AF%E5%BF%BD%E7%95%A5%EF%BC%89"><span class="toc-number">1.2.3.1.</span> <span class="toc-text">（1）启动Zookeeper（已启动可忽略）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E5%90%AF%E5%8A%A8%E7%AC%AC%E4%B8%80%E4%B8%AAMaster%EF%BC%88Master1%EF%BC%8CActive%EF%BC%89"><span class="toc-number">1.2.3.2.</span> <span class="toc-text">（2）启动第一个Master（Master1，Active）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%883%EF%BC%89%E5%90%AF%E5%8A%A8%E7%AC%AC%E4%BA%8C%E4%B8%AAMaster%EF%BC%88Master2%EF%BC%8CStandby%EF%BC%89"><span class="toc-number">1.2.3.3.</span> <span class="toc-text">（3）启动第二个Master（Master2，Standby）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%884%EF%BC%89%E5%90%AF%E5%8A%A8Worker%E8%8A%82%E7%82%B9%EF%BC%88%E8%BF%9E%E6%8E%A5%E6%89%80%E6%9C%89Master%EF%BC%89"><span class="toc-number">1.2.3.4.</span> <span class="toc-text">（4）启动Worker节点（连接所有Master）</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%885%EF%BC%89%E6%9F%A5%E7%9C%8B%E9%9B%86%E7%BE%A4%E7%8A%B6%E6%80%81"><span class="toc-number">1.2.3.5.</span> <span class="toc-text">（5）查看集群状态</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-HA%E5%88%87%E6%8D%A2%E6%B5%8B%E8%AF%95%EF%BC%88%E9%AA%8C%E8%AF%81%E9%AB%98%E5%8F%AF%E7%94%A8%EF%BC%89"><span class="toc-number">1.2.4.</span> <span class="toc-text">4. HA切换测试（验证高可用）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Spark-On-Yarn%E9%85%8D%E7%BD%AE%EF%BC%88%E4%BE%9D%E8%B5%96Hadoop-YARN%EF%BC%89"><span class="toc-number">1.3.</span> <span class="toc-text">三、Spark On Yarn配置（依赖Hadoop YARN）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-%E5%89%8D%E7%BD%AE%E5%87%86%E5%A4%87%EF%BC%88%E5%BF%85%E5%81%9A%EF%BC%89"><span class="toc-number">1.3.1.</span> <span class="toc-text">1. 前置准备（必做）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-%E6%A0%B8%E5%BF%83%E9%85%8D%E7%BD%AE%E4%BF%AE%E6%94%B9"><span class="toc-number">1.3.2.</span> <span class="toc-text">2. 核心配置修改</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%881%EF%BC%89%E4%BF%AE%E6%94%B9spark-defaults-conf%E6%96%87%E4%BB%B6"><span class="toc-number">1.3.2.1.</span> <span class="toc-text">（1）修改spark-defaults.conf文件</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%EF%BC%882%EF%BC%89%E4%BF%AE%E6%94%B9yarn-site-xml%E6%96%87%E4%BB%B6%EF%BC%88Hadoop%E9%85%8D%E7%BD%AE%EF%BC%89"><span class="toc-number">1.3.2.2.</span> <span class="toc-text">（2）修改yarn-site.xml文件（Hadoop配置）</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-%E6%B5%8B%E8%AF%95Spark-On-Yarn%E6%A8%A1%E5%BC%8F"><span class="toc-number">1.3.3.</span> <span class="toc-text">3. 测试Spark On Yarn模式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-%E7%BB%93%E6%9E%9C%E9%AA%8C%E8%AF%81"><span class="toc-number">1.3.4.</span> <span class="toc-text">4. 结果验证</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Spark-History-Server%E9%85%8D%E7%BD%AE%EF%BC%88%E5%8F%AF%E9%80%89%EF%BC%8C%E6%8E%A8%E8%8D%90%EF%BC%89"><span class="toc-number">1.3.5.</span> <span class="toc-text">5. Spark History Server配置（可选，推荐）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E8%A7%A3%E5%86%B3"><span class="toc-number">1.4.</span> <span class="toc-text">四、常见问题解决</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%80%BB%E7%BB%93"><span class="toc-number">1.5.</span> <span class="toc-text">五、总结</span></a></li></ol></li></ol>
+                    </div>
+                </span>
+            </div>
+        </div>
+        
+    </div>
+</aside>
+
+
+
+
+
+
+
+
+
+
+
+
 
 
           </div>
@@ -329,9 +665,9 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: false,
+		isPost: true,
 		isArchive: false,
-		isTag: true,
+		isTag: false,
 		isCategory: false,
 		open_in_new: true,
 		toc_hide_index: true,
